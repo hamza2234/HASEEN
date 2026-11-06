@@ -1,0 +1,94 @@
+clc;
+clear;
+close all;
+
+%% Load Dataset
+data = readmatrix('spambase.xlsx');
+X = data(:,1:end-1);
+Y = data(:,end);
+
+% Normalize
+X = normalize(X);
+
+% Convert labels to categorical (برای خروجی درست در ROC)
+Y = categorical(Y);
+
+%% Train-Test Split
+cv = cvpartition(Y, 'HoldOut', 0.3);
+
+X_train = X(training(cv), :);
+Y_train = Y(training(cv));
+
+X_test  = X(test(cv), :);
+Y_test  = Y(test(cv));
+
+%% Run Research-Grade GA-PSO Feature Selection
+[BestSol, BestCost, archive, curve] = GA_PSO_Research(X_train, Y_train);
+
+selected_features = find(BestSol);
+fprintf('Selected Features = %d\n', length(selected_features));
+
+%% Train Final Random Forest Using Selected Features
+X_train_sel = X_train(:, selected_features);
+X_test_sel  = X_test(:, selected_features);
+
+model = TreeBagger(200, X_train_sel, Y_train,...
+    'Method','classification',...
+    'OOBPrediction','on',...
+    'MinLeafSize',2);
+
+%% Predictions
+[pred_label, scores] = predict(model, X_test_sel);
+
+% Convert categorical predictions to numeric (0/1)
+pred = str2double(pred_label);
+
+% Probability of class 1 = column 2
+scores = scores(:,2);
+
+%% Metrics
+accuracy = mean(pred == double(Y_test));
+
+TP = sum(pred==1 & double(Y_test)==1);
+TN = sum(pred==0 & double(Y_test)==0);
+FP = sum(pred==1 & double(Y_test)==0);
+FN = sum(pred==0 & double(Y_test)==1);
+
+precision = TP/(TP+FP);
+recall    = TP/(TP+FN);
+F1        = 2*(precision*recall)/(precision+recall);
+
+fprintf('\n=== Final Classification Results ===\n');
+fprintf('Accuracy : %.4f\n', accuracy);
+fprintf('Precision: %.4f\n', precision);
+fprintf('Recall   : %.4f\n', recall);
+fprintf('F1-score : %.4f\n', F1);
+
+%% Confusion Matrix
+figure;
+confusionchart(Y_test,pred);
+title('Confusion Matrix');
+
+%% ROC Curve
+[Xroc, Yroc, ~, AUC] = perfcurve(Y_test, scores, '1');
+
+figure;
+plot(Xroc, Yroc, 'LineWidth',2);
+xlabel('False Positive Rate');
+ylabel('True Positive Rate');
+title(['ROC Curve  |  AUC = ' num2str(AUC)]);
+
+%% Performance Bar Chart
+figure;
+bar([accuracy precision recall F1]);
+set(gca, 'XTickLabel', {'Accuracy','Precision','Recall','F1'});
+title('Performance Metrics');
+ylim([0 1]);
+
+%% Convergence Curve
+figure;
+plot(curve, 'LineWidth',2);
+xlabel('Iteration');
+ylabel('Best Fitness');
+title('GA-PSO Research Convergence');
+grid on;

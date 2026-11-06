@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}النتائج — الرسالة مقابل المحسوب{% endblock %}
+{% block content %}
+
+<section class="hero small">
+  <h2>جدول النتائج</h2>
+  <p>
+    المقارنة بين القيم المنشورة في الرسالة والقيم الناتجة من إعادة تنفيذ
+    الخوارزمية على نفس البيانات بنفس الإعدادات.
+  </p>
+</section>
+
+{% for key, cfg in thesis.items() %}
+<section class="panel">
+  <h3>{{ cfg.title }} — {{ cfg.dataset }}</h3>
+  <table class="tbl">
+    <thead>
+      <tr><th>المقياس</th><th>قيمة الرسالة</th><th>المحسوب</th></tr>
+    </thead>
+    <tbody id="cmp-{{ key }}">
+      <tr><td>السمات المختارة</td><td>{{ cfg.n_selected }}</td>
+          <td data-c="n_selected">—</td></tr>
+      <tr><td>الدقة</td><td>{{ cfg.accuracy }}%</td>
+          <td data-c="accuracy">—</td></tr>
+      <tr><td>الإحكام</td><td>{{ cfg.precision }}%</td>
+          <td data-c="precision">—</td></tr>
+      <tr><td>الاستدعاء</td><td>{{ cfg.recall }}%</td>
+          <td data-c="recall">—</td></tr>
+      <tr><td>F1</td><td>{{ cfg.f1 }}%</td><td data-c="f1">—</td></tr>
+      <tr><td>AUC</td><td>{{ cfg.auc }}</td><td data-c="auc">—</td></tr>
+    </tbody>
+  </table>
+  <p class="muted small">
+    مصفوفة الالتباس في الرسالة: {{ cfg.confusion_matrix }}
+  </p>
+  <button class="btn ghost" data-run="{{ key }}">▶ احسب القيم الفعلية</button>
+</section>
+{% endfor %}
+
+<section class="panel note">
+  <h3>ملاحظة منهجية</h3>
+  <p>
+    القيم «المحسوبة» تأتي من تشغيل حقيقي لخط الأنابيب: اختيار السمات بـPSO–GA
+    على مجموعة التدريب، ثم تدريب Random Forest وتقييمه على مجموعة الاختبار.
+    تختلف النتائج قليلاً باختلاف البذرة العشوائية لأن الخوارزمية عشوائية بطبيعتها.
+  </p>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.querySelectorAll('[data-run]').forEach(btn => {
+  btn.onclick = async () => {
+    const key = btn.dataset.run;
+    btn.textContent = '⏳ جارٍ الحساب...'; btn.disabled = true;
+    const {job_id} = await (await fetch('/api/run', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({dataset: key})})).json();
+    const tick = async () => {
+      const j = await (await fetch('/api/job/'+job_id)).json();
+      if (j.status === 'running') return setTimeout(tick, 1200);
+      if (j.status === 'error') { alert(j.error); btn.disabled=false; return; }
+      fill(key, j.result);
+      btn.textContent = '✔ تم'; btn.disabled = false;
+    };
+    tick();
+  };
+});
+
+function fill(key, r){
+  const map = {n_selected: r.n_selected, accuracy: r.accuracy,
+    precision: r.precision, recall: r.recall, f1: r.f1, auc: r.auc};
+  document.querySelectorAll('#cmp-'+key+' [data-c]').forEach(td => {
+    const k = td.dataset.c, v = map[k];
+    td.textContent = (k === 'auc' || k === 'n_selected')
+      ? (k === 'auc' ? v.toFixed(4) : v)
+      : (v*100).toFixed(2)+'%';
+  });
+}
+</script>
+{% endblock %}

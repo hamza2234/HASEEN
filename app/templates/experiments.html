@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}التجارب — التقارب و ROC والمقاييس{% endblock %}
+{% block content %}
+
+<section class="hero small">
+  <h2>تجارب الخوارزمية</h2>
+  <p>
+    شغّل التجربة على أي مجموعة بيانات لعرض منحنى التقارب ومنحنى ROC
+    ومصفوفة الالتباس وأعمدة المقاييس — مطابقة لأشكال الفصل الرابع.
+  </p>
+</section>
+
+<section class="panel">
+  <div class="grid-form">
+    <label>مجموعة البيانات
+      <select id="dataset">
+        {% for key, cfg in thesis.items() %}
+        <option value="{{ key }}">{{ cfg.dataset }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>حجم المجتمع <input type="number" id="n_pop" value="20" min="4"></label>
+    <label>التكرارات <input type="number" id="max_it" value="20" min="1"></label>
+    <label>البذرة <input type="number" id="seed" value="0" min="0"></label>
+  </div>
+  <button class="btn" id="run">▶ تشغيل</button>
+  <div class="progress-wrap" id="progress-wrap" hidden>
+    <div class="progress"><div id="bar"></div></div>
+    <span id="progress-text">0%</span>
+  </div>
+</section>
+
+<section class="panel" id="out" hidden>
+  <div class="metric-row">
+    <div class="metric"><span>الدقة</span><b id="m-acc">—</b></div>
+    <div class="metric"><span>الإحكام</span><b id="m-prec">—</b></div>
+    <div class="metric"><span>الاستدعاء</span><b id="m-rec">—</b></div>
+    <div class="metric"><span>F1</span><b id="m-f1">—</b></div>
+    <div class="metric"><span>AUC</span><b id="m-auc">—</b></div>
+    <div class="metric"><span>كلفة نهائية</span><b id="m-cost">—</b></div>
+  </div>
+  <div class="two-col">
+    <div><h4>منحنى التقارب</h4><canvas id="conv" height="220"></canvas></div>
+    <div><h4>منحنى ROC</h4><canvas id="roc" height="220"></canvas></div>
+  </div>
+  <div class="two-col">
+    <div><h4>مصفوفة الالتباس</h4><div id="cm" class="cm-wrap"></div></div>
+    <div><h4>أعمدة المقاييس</h4><canvas id="bars" height="220"></canvas></div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+let charts = {};
+document.getElementById('run').onclick = async () => {
+  const body = {
+    dataset: document.getElementById('dataset').value,
+    n_pop: +document.getElementById('n_pop').value,
+    max_it: +document.getElementById('max_it').value,
+    seed: +document.getElementById('seed').value
+  };
+  document.getElementById('progress-wrap').hidden = false;
+  document.getElementById('out').hidden = true;
+  const {job_id} = await (await fetch('/api/run', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(body)})).json();
+  poll(job_id);
+};
+
+async function poll(id){
+  const j = await (await fetch('/api/job/'+id)).json();
+  document.getElementById('bar').style.width = (j.progress||0)+'%';
+  document.getElementById('progress-text').textContent = (j.progress||0)+'%';
+  if (j.status === 'running') return setTimeout(()=>poll(id), 900);
+  if (j.status === 'error') return alert(j.error);
+  render(j.result);
+}
+
+const pct = x => (x*100).toFixed(2)+'%';
+
+function render(r){
+  document.getElementById('out').hidden = false;
+  document.getElementById('m-acc').textContent = pct(r.accuracy);
+  document.getElementById('m-prec').textContent = pct(r.precision);
+  document.getElementById('m-rec').textContent = pct(r.recall);
+  document.getElementById('m-f1').textContent = pct(r.f1);
+  document.getElementById('m-auc').textContent = r.auc.toFixed(4);
+  document.getElementById('m-cost').textContent = r.final_cost.toFixed(5);
+
+  if (charts.conv) charts.conv.destroy();
+  charts.conv = new Chart(document.getElementById('conv'), {
+    type:'line',
+    data:{ labels:r.convergence.map((_,i)=>i+1),
+      datasets:[{data:r.convergence, borderColor:'#5b7cfa', pointRadius:0,
+        backgroundColor:'rgba(91,124,250,.15)', fill:true, tension:.25}]},
+    options:{plugins:{legend:{display:false}}}});
+
+  if (charts.roc) charts.roc.destroy();
+  charts.roc = new Chart(document.getElementById('roc'), {
+    type:'line',
+    data:{ datasets:[
+      {data:r.roc.fpr.map((f,i)=>({x:f,y:r.roc.tpr[i]})), borderColor:'#22c55e',
+       pointRadius:0, tension:.1},
+      {data:[{x:0,y:0},{x:1,y:1}], borderColor:'#9aa4b2',
+       borderDash:[5,5], pointRadius:0}]},
+    options:{parsing:false, scales:{x:{type:'linear',min:0,max:1},
+      y:{min:0,max:1}}}});
+
+  const [[tn,fp],[fn,tp]] = r.confusion_matrix;
+  const tot = tn+fp+fn+tp;
+  const c = (v,cl)=>`<div class="cm-cell ${cl}"><b>${v}</b>
+      <span>${(100*v/tot).toFixed(1)}%</span></div>`;
+  document.getElementById('cm').innerHTML = `
+    <div class="cm-grid">
+      <div class="cm-corner"></div>
+      <div class="cm-head">${r.class_names[0]}</div>
+      <div class="cm-head">${r.class_names[1]}</div>
+      <div class="cm-head">${r.class_names[0]}</div>${c(tn,'ok')}${c(fp,'bad')}
+      <div class="cm-head">${r.class_names[1]}</div>${c(fn,'bad')}${c(tp,'ok')}
+    </div>`;
+
+  if (charts.bars) charts.bars.destroy();
+  charts.bars = new Chart(document.getElementById('bars'), {
+    type:'bar',
+    data:{ labels:['Accuracy','Precision','Recall','F1'],
+      datasets:[{data:[r.accuracy,r.precision,r.recall,r.f1].map(x=>x*100),
+        backgroundColor:'#5b7cfa'}]},
+    options:{plugins:{legend:{display:false}},
+      scales:{y:{min:0,max:100,title:{display:true,text:'%'}}}}});
+}
+</script>
+{% endblock %}

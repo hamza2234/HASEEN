@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}البارامترات — الجدول 4-4{% endblock %}
+{% block content %}
+
+<section class="hero small">
+  <h2>بارامترات الخوارزمية (الجدول 4-4)</h2>
+  <p>القيم المستخدمة في خوارزمية اختيار السمات الهجينة PSO–GA.</p>
+</section>
+
+<section class="panel">
+  <table class="tbl">
+    <thead>
+      <tr><th>البارامتر</th><th>الرمز</th><th>القيمة</th><th>الوصف</th></tr>
+    </thead>
+    <tbody>
+      {% for name, sym, val, desc in params %}
+      <tr>
+        <td>{{ name }}</td><td><code>{{ sym }}</code></td>
+        <td><b>{{ val }}</b></td><td class="muted">{{ desc }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section class="panel">
+  <h3>إعدادات كل مجموعة بيانات</h3>
+  <table class="tbl">
+    <thead><tr><th>المجموعة</th><th>العينات</th><th>السمات</th>
+      <th>السمات المختارة</th><th>التقسيم</th></tr></thead>
+    <tbody>
+      {% for key, cfg in thesis.items() %}
+      <tr>
+        <td>{{ cfg.dataset }}</td>
+        <td>{{ "{:,}".format(cfg.n_samples) }}</td>
+        <td>{{ cfg.n_features }}</td>
+        <td>{{ cfg.n_selected }}</td>
+        <td>80% تدريب / 20% اختبار</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+{% endblock %}

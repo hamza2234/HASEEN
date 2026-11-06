@@ -1,0 +1,495 @@
+{% extends "base.html" %}
+{% block title %}{{ cfg.title }} — تشغيل التجربة{% endblock %}
+{% block content %}
+
+<section class="hero small">
+  <h2>{{ cfg.title }}</h2>
+  <p>
+    {% if key == 'spambase' %}
+      تصنيف رسائل البريد إلى <b>مزيف (Spam)</b> أو <b>حقيقي (Ham)</b>
+      باستخدام {{ n_features }} سمة.
+    {% else %}
+      تصنيف المواقع إلى <b>مزيف (Phishing)</b> أو <b>حقيقي (Legitimate)</b>
+      باستخدام {{ n_features }} سمة.
+    {% endif %}
+  </p>
+</section>
+
+<section class="panel">
+  <h3>بارامترات التشغيل</h3>
+  <div class="grid-form">
+    <label>حجم المجتمع (nPop)
+      <input type="number" id="n_pop" value="20" min="4" max="60">
+    </label>
+    <label>عدد التكرارات (MaxIt)
+      <input type="number" id="max_it" value="20" min="1" max="60">
+    </label>
+    <label>عدد السمات المطلوبة
+      <input type="number" id="desired" value="{{ cfg.n_selected }}"
+             min="2" max="{{ n_features }}">
+    </label>
+    <label>نسبة الاختبار
+      <select id="test_size">
+        <option value="0.2" selected>20%</option>
+        <option value="0.3">30%</option>
+      </select>
+    </label>
+    <label>البذرة العشوائية
+      <input type="number" id="seed" value="0" min="0" max="999">
+    </label>
+  </div>
+  <button class="btn" id="run">▶ تشغيل التجربة</button>
+  <div class="progress-wrap" id="progress-wrap" hidden>
+    <div class="progress"><div id="bar"></div></div>
+    <span id="progress-text">0%</span>
+  </div>
+</section>
+
+<section class="panel" id="results-panel" hidden>
+  <h3>النتائج</h3>
+
+  <div class="metric-row">
+    <div class="metric"><span>الدقة</span><b id="m-acc">—</b></div>
+    <div class="metric"><span>الإحكام</span><b id="m-prec">—</b></div>
+    <div class="metric"><span>الاستدعاء</span><b id="m-rec">—</b></div>
+    <div class="metric"><span>F1</span><b id="m-f1">—</b></div>
+    <div class="metric"><span>AUC</span><b id="m-auc">—</b></div>
+    <div class="metric"><span>سمات مختارة</span><b id="m-nsel">—</b></div>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <h4>منحنى التقارب (دالة الكلفة)</h4>
+      <canvas id="conv" height="220"></canvas>
+    </div>
+    <div>
+      <h4>منحنى ROC</h4>
+      <canvas id="roc" height="220"></canvas>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <h4>مصفوفة الالتباس</h4>
+      <div id="cm" class="cm-wrap"></div>
+    </div>
+    <div>
+      <h4>السمات المختارة</h4>
+      <div id="selected" class="chips"></div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn ghost" id="download-json">⬇ تنزيل JSON</button>
+    <button class="btn ghost" id="download-csv">⬇ تنزيل CSV</button>
+  </div>
+</section>
+
+<section class="panel" id="live-panel">
+  {% if key == 'spambase' %}
+  <h3>✉️ الصق بريداً إلكترونياً واكشفه بنفسك</h3>
+  <p class="muted">
+    الصق نص البريد الكامل (أو عنوانه). يحوّل النظام النص إلى سمات Spambase
+    السبع والخمسين بنفس التعريفات المنشورة، ثم يصنّفه: <b>مزيف (Spam)</b> أو
+    <b>حقيقي (Ham)</b>.
+  </p>
+  <textarea id="email-text" rows="9" placeholder="الصق نص البريد هنا...
+
+Subject: FREE MONEY!!! CLAIM YOUR PRIZE NOW!!!
+Dear Friend, you have been selected to receive a FREE cash bonus..."></textarea>
+  <div class="actions">
+    <button class="btn" id="analyze-text">🔍 اكشف البريد</button>
+    <button class="btn ghost" id="ex-spam">نموذج بريد مزيف</button>
+    <button class="btn ghost" id="ex-ham">نموذج بريد حقيقي</button>
+  </div>
+  {% else %}
+  <h3>🌐 أدخل رابط موقع واكشفه بنفسك</h3>
+  <p class="muted">
+    أدخل رابطاً كاملاً. يحسب النظام سمات مجموعة «Phishing Websites» الثلاثين
+    من الرابط نفسه، ثم يصنّفه: <b>مزيف (Phishing)</b> أو <b>حقيقي
+    (Legitimate)</b>.
+  </p>
+  <input type="text" id="url-input" class="wide"
+         placeholder="https://example.com/login?id=1">
+  <div class="actions">
+    <button class="btn" id="analyze-url">🔍 اكشف الرابط</button>
+    <button class="btn ghost" id="ex-fake-url">نموذج موقع مزيف</button>
+    <button class="btn ghost" id="ex-real-url">نموذج موقع حقيقي</button>
+  </div>
+  {% endif %}
+  <div id="live-out" hidden></div>
+</section>
+
+<section class="panel">
+  <h3>🧪 إدخال السمات يدوياً</h3>
+  <p class="muted">
+    حدّد قيمة كل سمة بنفسك وشغّل المصنّف مباشرة على هذا المتجه.
+  </p>
+  <button class="btn ghost" id="load-form">⚙ تحميل نموذج السمات</button>
+  <div id="manual-form" class="manual-grid" hidden></div>
+  <div class="actions" id="manual-actions" hidden>
+    <button class="btn" id="run-manual">🔍 صنّف هذا المتجه</button>
+    <button class="btn ghost" id="reset-manual">↺ إعادة تعيين</button>
+  </div>
+  <div id="manual-out" hidden></div>
+</section>
+
+<section class="panel">
+  <h3>فحص عيّنات — مزيف أم حقيقي؟</h3>
+  <p class="muted">
+    يُصنّف النموذج عيّنات مسحوبة من مجموعة الاختبار (غير المستخدمة في التدريب)
+    ويقارن التوقّع بالتصنيف الحقيقي.
+  </p>
+  <div class="actions">
+    <button class="btn ghost" id="sample">🎲 عيّنة واحدة</button>
+    <button class="btn ghost" id="batch">📋 10 عيّنات</button>
+  </div>
+  <div id="sample-out" class="verdict" hidden></div>
+  <table class="tbl" id="batch-tbl" hidden>
+    <thead><tr><th>#</th><th>الحقيقي</th><th>التوقّع</th>
+      <th>الثقة</th><th>صحيح؟</th></tr></thead>
+    <tbody id="batch-body"></tbody>
+  </table>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const KEY = "{{ key }}";
+const CFG = {
+  accuracy: {{ cfg.accuracy }}, precision: {{ cfg.precision }},
+  recall: {{ cfg.recall }}, f1: {{ cfg.f1 }}, auc: {{ cfg.auc }},
+  cm: {{ cfg.confusion_matrix|tojson }}, classNames: {{ cfg.class_names|tojson }}
+};
+let charts = {}, lastResult = null;
+
+document.getElementById('run').onclick = async () => {
+  const body = {
+    dataset: KEY,
+    n_pop: +document.getElementById('n_pop').value,
+    max_it: +document.getElementById('max_it').value,
+    desired: +document.getElementById('desired').value,
+    test_size: +document.getElementById('test_size').value,
+    seed: +document.getElementById('seed').value
+  };
+  document.getElementById('progress-wrap').hidden = false;
+  document.getElementById('results-panel').hidden = true;
+  const {job_id} = await (await fetch('/api/run', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(body)})).json();
+  poll(job_id);
+};
+
+async function poll(id){
+  const j = await (await fetch('/api/job/'+id)).json();
+  document.getElementById('bar').style.width = (j.progress||0)+'%';
+  document.getElementById('progress-text').textContent = (j.progress||0)+'%';
+  if (j.status === 'running') return setTimeout(()=>poll(id), 900);
+  if (j.status === 'error') { alert('خطأ:\n'+j.error); return; }
+  lastResult = j.result; render(j.result);
+}
+
+function pct(x){ return (x*100).toFixed(2)+'%'; }
+
+function render(r){
+  document.getElementById('results-panel').hidden = false;
+  document.getElementById('m-acc').textContent = pct(r.accuracy);
+  document.getElementById('m-prec').textContent = pct(r.precision);
+  document.getElementById('m-rec').textContent = pct(r.recall);
+  document.getElementById('m-f1').textContent = pct(r.f1);
+  document.getElementById('m-auc').textContent = r.auc.toFixed(4);
+  document.getElementById('m-nsel').textContent = r.n_selected;
+
+  drawConv(r.convergence);
+  drawRoc(r.roc);
+  drawCM(r.confusion_matrix, r.class_names);
+  document.getElementById('selected').innerHTML =
+    r.selected_features.map(f=>`<span class="chip">${f}</span>`).join('');
+}
+
+function drawConv(curve){
+  if (charts.conv) charts.conv.destroy();
+  charts.conv = new Chart(document.getElementById('conv'), {
+    type:'line',
+    data:{ labels: curve.map((_,i)=>i+1),
+      datasets:[{ label:'Cost', data:curve, borderColor:'#5b7cfa',
+        backgroundColor:'rgba(91,124,250,.15)', fill:true, tension:.25,
+        pointRadius:0 }]},
+    options:{ plugins:{legend:{display:false}},
+      scales:{ x:{title:{display:true,text:'Iteration'}},
+               y:{title:{display:true,text:'Cost'}}}}
+  });
+}
+
+function drawRoc(roc){
+  if (charts.roc) charts.roc.destroy();
+  charts.roc = new Chart(document.getElementById('roc'), {
+    type:'line',
+    data:{ datasets:[
+      { label:'ROC', data: roc.fpr.map((f,i)=>({x:f,y:roc.tpr[i]})),
+        borderColor:'#22c55e', pointRadius:0, tension:.1 },
+      { label:'Random', data:[{x:0,y:0},{x:1,y:1}],
+        borderColor:'#9aa4b2', borderDash:[5,5], pointRadius:0 }
+    ]},
+    options:{ parsing:false,
+      scales:{ x:{type:'linear',min:0,max:1,title:{display:true,text:'False Positive Rate'}},
+               y:{min:0,max:1,title:{display:true,text:'True Positive Rate'}}}}
+  });
+}
+
+function drawCM(cm, names){
+  const [[tn,fp],[fn,tp]] = cm;
+  const total = tn+fp+fn+tp;
+  const cell = (v, cls) =>
+    `<div class="cm-cell ${cls}"><b>${v}</b><span>${(100*v/total).toFixed(1)}%</span></div>`;
+  document.getElementById('cm').innerHTML = `
+    <div class="cm-grid">
+      <div class="cm-corner"></div>
+      <div class="cm-head">${names[0]}<br><small>متوقّع</small></div>
+      <div class="cm-head">${names[1]}<br><small>متوقّع</small></div>
+      <div class="cm-head">${names[0]}<br><small>حقيقي</small></div>
+      ${cell(tn,'ok')}${cell(fp,'bad')}
+      <div class="cm-head">${names[1]}<br><small>حقيقي</small></div>
+      ${cell(fn,'bad')}${cell(tp,'ok')}
+    </div>`;
+}
+
+document.getElementById('sample').onclick = async () => {
+  const r = await (await fetch('/api/predict', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({dataset: KEY,
+      seed: Math.floor(Math.random()*1000)})})).json();
+  const out = document.getElementById('sample-out');
+  out.hidden = false;
+  const fake = r.prediction_label.includes('Fake');
+  out.className = 'verdict ' + (fake ? 'fake' : 'real');
+  out.innerHTML = `
+    <div class="verdict-badge">${fake ? '⚠ مزيف' : '✔ حقيقي'}</div>
+    <div>
+      <b>${r.prediction_label}</b><br>
+      الثقة: ${(r.confidence*100).toFixed(1)}%
+      ${r.true_label !== null ? '<br>التصنيف الحقيقي: '+r.true_label+
+        (r.correct ? ' ✔ مطابق' : ' ✘ مختلف') : ''}
+    </div>`;
+};
+
+document.getElementById('batch').onclick = async () => {
+  const r = await (await fetch('/api/samples', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({dataset: KEY, n: 10,
+      seed: Math.floor(Math.random()*1000)})})).json();
+  const body = document.getElementById('batch-body');
+  body.innerHTML = r.rows.map((x,i) => {
+    const fake = x.label.includes('Fake');
+    return `<tr>
+      <td>${i+1}</td>
+      <td>${x.true_label}</td>
+      <td><span class="tag ${fake?'fake':'real'}">${x.label}</span></td>
+      <td>${(x.confidence*100).toFixed(1)}%</td>
+      <td>${x.correct ? '✔' : '✘'}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('batch-tbl').hidden = false;
+};
+
+// ---------- verdict renderer ----------
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function verdictHTML(v, extra) {
+  const fake = v.is_fake !== undefined ? v.is_fake
+                                       : v.prediction_label.includes('Fake');
+  const probs = (v.classes || []).map((c,i) =>
+    `<div class="prob"><span>${esc(v.class_names[i])}</span>
+       <div class="prob-bar"><div style="width:${(v.probabilities[i]*100).toFixed(1)}%"></div></div>
+       <b>${(v.probabilities[i]*100).toFixed(1)}%</b></div>`).join('');
+  const drivers = (v.drivers || []).map(d =>
+    `<div class="driver"><span>${esc(d.feature)}</span>
+       <b>${(d.importance*100).toFixed(1)}%</b>
+       <small>القيمة: ${esc(Number(d.value).toFixed(4))}</small></div>`).join('');
+  return `
+    <div class="verdict ${fake?'fake':'real'} big">
+      <div class="verdict-badge">${fake ? '⚠ مزيف' : '✔ حقيقي'}</div>
+      <div>
+        <b>${esc(v.prediction_label)}</b><br>
+        الثقة: ${(v.confidence*100).toFixed(1)}%
+      </div>
+    </div>
+    ${extra || ''}
+    <div class="probs">${probs}</div>
+    ${drivers ? '<h4>أكثر السمات تأثيراً في القرار</h4><div class="drivers">'+drivers+'</div>' : ''}`;
+}
+
+// ---------- e-mail text ----------
+const EX_SPAM = `Subject: FREE MONEY!!! CLAIM YOUR PRIZE NOW!!!
+
+Dear Friend,
+Congratulations! You have been selected to receive a FREE cash bonus of $5000.
+This is a limited time offer. Click here to claim your prize money NOW.
+We need your credit card details to transfer the funds. Please reply with your
+full name, address, and bank account information immediately.
+Order today and receive an EXTRA $1000 bonus free of charge!
+Visit our website: http://free-money-now.tk/claim?id=88291
+Do not miss this opportunity. Act now! Limited offer expires TODAY.`;
+
+const EX_HAM = `Subject: Meeting tomorrow at 10am
+
+Hi team,
+Just a reminder that we have our project meeting tomorrow at 10am in the
+conference room. Please bring the report you prepared and the data table
+we discussed last week.
+Thanks,
+George
+Dept of Computer Science, University`;
+
+if (document.getElementById('analyze-text')) {
+  const box = document.getElementById('email-text');
+  const out = document.getElementById('live-out');
+  document.getElementById('ex-spam').onclick = () => { box.value = EX_SPAM; };
+  document.getElementById('ex-ham').onclick = () => { box.value = EX_HAM; };
+  document.getElementById('analyze-text').onclick = async () => {
+    const text = box.value.trim();
+    if (!text) { alert('الصق نص البريد أولاً'); return; }
+    out.hidden = false;
+    out.innerHTML = '<p class="muted">⏳ جارٍ التحليل...</p>';
+    const r = await (await fetch('/api/analyze_text', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({text})})).json();
+    if (r.error) { out.innerHTML = '<p class="err">'+esc(r.error)+'</p>'; return; }
+    const ex = r.explain;
+    const hits = ex.hits.map(h =>
+      `<span class="chip">${esc(h.token)} <b>${h.percent.toFixed(2)}%</b></span>`).join('');
+    const extra = `
+      <div class="statline">
+        <span>عدد الكلمات: <b>${ex.n_words}</b></span>
+        <span>عدد المحارف: <b>${ex.n_chars}</b></span>
+        <span>أطول سلسلة أحرف كبيرة: <b>${ex.cap_longest}</b></span>
+        <span>متوسط طول السلاسل: <b>${ex.cap_avg.toFixed(2)}</b></span>
+      </div>
+      <h4>الكلمات والمحارف المطابقة لسمات Spambase</h4>
+      <div class="chips">${hits || '<span class="muted">لا توجد مطابقات</span>'}</div>`;
+    out.innerHTML = verdictHTML(r.verdict, extra);
+  };
+}
+
+// ---------- URL ----------
+const EX_FAKE_URL = 'http://paypal-secure-login.verify-account.tk/login.php?id=1&update=confirm';
+const EX_REAL_URL = 'https://www.paypal.com/signin';
+
+if (document.getElementById('analyze-url')) {
+  const inp = document.getElementById('url-input');
+  const out = document.getElementById('live-out');
+  document.getElementById('ex-fake-url').onclick = () => { inp.value = EX_FAKE_URL; };
+  document.getElementById('ex-real-url').onclick = () => { inp.value = EX_REAL_URL; };
+  document.getElementById('analyze-url').onclick = async () => {
+    const url = inp.value.trim();
+    if (!url) { alert('أدخل رابطاً أولاً'); return; }
+    out.hidden = false;
+    out.innerHTML = '<p class="muted">⏳ جارٍ التحليل...</p>';
+    const r = await (await fetch('/api/analyze_url', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({url})})).json();
+    if (r.error) { out.innerHTML = '<p class="err">'+esc(r.error)+'</p>'; return; }
+    const m = r.meta;
+    const extra = `
+      <div class="statline">
+        <span>النطاق: <b>${esc(m.host) || '—'}</b></span>
+        <span>النطاق المسجّل: <b>${esc(m.registrable) || '—'}</b></span>
+        <span>الطول: <b>${m.length}</b></span>
+        <span>HTTPS: <b>${m.https ? 'نعم' : 'لا'}</b></span>
+      </div>
+      ${r.signals.length ? '<h4>مؤشرات الخطر المكتشفة</h4><ul class="signals">'+
+        r.signals.map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul>' :
+        '<p class="ok-msg">لم تُكتشف أي مؤشرات خطر من الرابط.</p>'}
+      <h4>السمات الثلاثون المستخرجة من الرابط</h4>
+      <table class="tbl small-tbl"><thead><tr><th>السمة</th><th>القيمة</th>
+        <th>المعنى</th></tr></thead><tbody>
+        ${r.table.map(t=>`<tr><td>${esc(t.label)}</td>
+          <td class="mono">${t.value}</td>
+          <td class="muted">${esc(t.meaning)}</td></tr>`).join('')}
+      </tbody></table>`;
+    out.innerHTML = verdictHTML(r.verdict, extra);
+  };
+}
+
+// ---------- manual feature entry ----------
+if (document.getElementById('load-form')) {
+  const form = document.getElementById('manual-form');
+  const acts = document.getElementById('manual-actions');
+  const out = document.getElementById('manual-out');
+  let meta = null;
+
+  document.getElementById('load-form').onclick = async () => {
+    meta = await (await fetch('/api/features/'+KEY)).json();
+    form.innerHTML = meta.items.map((it,i) => {
+      if (KEY === 'phishing') {
+        const opts = it.values.map(v =>
+          `<option value="${v.value}">${v.value} — ${esc(v.meaning)}</option>`).join('');
+        return `<label class="fld"><span>${esc(it.label)}
+          <code>${esc(it.name)}</code></span>
+          <select data-i="${i}">${opts}</select></label>`;
+      }
+      const d = meta.defaults[i];
+      return `<label class="fld"><span>${esc(it.label)}</span>
+        <input type="number" step="any" data-i="${i}"
+               value="${Number(d).toFixed(4)}"
+               min="${meta.ranges.min[i]}" max="${meta.ranges.max[i]}"></label>`;
+    }).join('');
+    form.hidden = false; acts.hidden = false;
+    form.scrollIntoView({behavior:'smooth', block:'nearest'});
+  };
+
+  document.getElementById('run-manual').onclick = async () => {
+    const values = [...form.querySelectorAll('[data-i]')]
+      .map(el => Number(el.value));
+    out.hidden = false;
+    out.innerHTML = '<p class="muted">⏳ جارٍ التصنيف...</p>';
+    const r = await (await fetch('/api/predict_manual', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({dataset: KEY, values})})).json();
+    if (r.error) { out.innerHTML = '<p class="err">'+esc(r.error)+'</p>'; return; }
+    out.innerHTML = verdictHTML(r);
+  };
+
+  document.getElementById('reset-manual').onclick = () => {
+    if (!meta) return;
+    form.querySelectorAll('[data-i]').forEach((el,i) => {
+      if (KEY === 'phishing') el.selectedIndex = 0;
+      else el.value = Number(meta.defaults[i]).toFixed(4);
+    });
+    out.hidden = true;
+  };
+}
+
+document.getElementById('download-json').onclick = () => {
+  if (!lastResult) return;
+  const blob = new Blob([JSON.stringify(lastResult, null, 2)],
+                        {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = KEY + '_results.json'; a.click();
+};
+
+document.getElementById('download-csv').onclick = () => {
+  if (!lastResult) return;
+  const r = lastResult;
+  const rows = [
+    ['metric','value'],
+    ['accuracy', r.accuracy], ['precision', r.precision],
+    ['recall', r.recall], ['f1', r.f1], ['auc', r.auc],
+    ['selected_features', r.n_selected],
+    ['train_accuracy', r.train_accuracy],
+    ['final_cost', r.final_cost],
+  ];
+  const csv = rows.map(x=>x.join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = KEY + '_metrics.csv'; a.click();
+};
+</script>
+{% endblock %}

@@ -1,0 +1,890 @@
+
+===== PAGE 1 =====
+1 
+ 
+ 
+Damghan University 
+Master's Thesis 
+Computer Science (Soft Computing and Artificial Intelligence) 
+ 
+ 
+Development of a Hybrid Method Based on Particle 
+Swarm Optimization and Genetic Algorithm for Selecting 
+an Effective Feature Subset 
+ 
+Student  
+Hussein Naser Hussein 
+ 
+Supervisor 
+Dr. Abdolali Basiri 
+   
+May 2026 
+ 
+  
+
+
+===== PAGE 2 =====
+2 
+ 
+Abstract 
+With the increasing volume of data and the growing number of features in machine 
+learning problems, feature selection has become one of the most important stages of 
+data preprocessing. The presence of irrelevant and redundant features  can increase 
+computational complexity, reduce processing speed, and decrease the performance of 
+classification models. Therefore, the use of optimization -based methods for selecting 
+effective features plays a significant role in improving the accuracy and  efficiency of 
+machine learning models. In this study, a hybrid method based on the PSO and GA 
+metaheuristic algorithms is proposed for optimal feature selection, and its 
+performance is evaluated using the Random Forest classifier. In the proposed 
+approach, by simultaneously utilizing the global search capability of the PSO 
+algorithm and the ability of the Genetic Algorithm to generate diverse solutions, an 
+optimal subset of effective features was selected. These selected features were then 
+used as inputs f or the Random Forest classification model.  To evaluate the proposed 
+method, the Spambase and Phishing datasets were employed. The results showed that 
+in the Spambase dataset, 46 features were selected from the initial 57 features, and the 
+model achieved an accuracy of 96.79%, precision of 96.40%, recall of 97.89%, and an 
+F1-score of 97.14%. In addition, the AUC value of 0.988 indicated the high capability 
+of the model in distinguishing between classes. In the Phishing dataset, 22 features 
+were selected from  the initial 30 features, and the classification results included an 
+accuracy of 98.20%, precision of 97.98%, recall of 98.80%, and an F1 -score of 
+98.39%. Furthermore, the AUC value of 0.996 demonstrated the strong discriminative 
+power of the selected feat ures in separating classes.  Overall, the results of this 
+research indicate that the hybrid PSO –GA method is an effective approach for feature 
+selection in classification problems and can improve model performance, reduce 
+computational complexity, and incre ase processing speed while simultaneously 
+decreasing the number of features. 
+Keywords: Feature Selection, Genetic Algorithm, Particle Swarm Optimization, 
+Machine Learning, Random Forest, Classification. 
+  
+
+===== PAGE 3 =====
+3 
+ 
+Problem Statement 
+With the increase in large and complex data in various problems, the presence 
+of a large number of features in the data has become one of the main challenges 
+in machine learning and analysis. These features can include textual, numerical, 
+structural or behavioral information, each of which may have a different 
+contribution to the predictio n models. Many of these features are unimportant, 
+repetitive or noisy, and their use can reduce the accuracy of the models, increase 
+the error rate and increase the computational complexity. In addition, the 
+presence of ineffective features leads to an inc rease in the dimensions of the 
+data and, as a result, longer model training time, higher consumption of 
+computational resources and a decrease in the overall efficiency of the learning 
+process. Therefore, the optimal and targeted selection of effective fea tures, as a 
+crucial preprocessing step, plays a key role in improving the performance of 
+machine learning models and can help simplify models, reduce computational 
+cost, and increase prediction accuracy [4,5]. The feature selection problem can 
+be considered as a multi-objective optimization problem, such that the goal is to 
+simultaneously maximize prediction accuracy and minimize the number of 
+features used. In practice, the search space of all possible combinations of 
+features is very large and complex, an d it is impossible to explore all options. 
+This has led researchers to use intelligent methods and population -based 
+algorithms for feature selection, because these algorithms have the ability to 
+efficiently search in a large feature space and find optimal subsets [6]. 
+One of the most widely used algorithms in this field is the particle swarm 
+optimization algorithm, which has a high ability to find suitable feature sets by 
+utilizing group and simultaneous particle search in the solution space. However, 
+the pa rticle swarm optimization algorithm may sometimes get stuck in local 
+optima and fail to achieve the best answer in the search space. On the other 
+hand, the genetic algorithm increases the search diversity by using combination 
+
+===== PAGE 4 =====
+4 
+ 
+and mutation operators and increases the chance of escaping from local optima, 
+but its convergence speed is usually lower and it requires more time to reach the 
+optimal answer. By combining these two algorithms, the advantages of both 
+methods can be combined: the high search speed of t he particle swarm 
+optimization algorithm and the ability of the genetic algorithm to maintain 
+diversity and prevent getting stuck in local optima. This combination allows 
+finding a subset of features that has the greatest impact on improving the 
+accuracy of learning models while reducing computational complexity. Using 
+such a hybrid algorithm allows researchers to perform feature selection 
+intelligently and efficiently and improve the performance of models in problems 
+with large and complex data. 
+The main g oal of this research is to develop an intelligent and optimal method 
+for feature selection using a combination of particle swarm optimization and 
+genetic algorithms that can identify an effective subset of features, increase the 
+accuracy of learning models , and at the same time reduce computational 
+complexity and processing time. This method can be used as a general feature 
+selection framework in various machine learning problems and has high 
+generalizability. 
+ 
+Importance of the research 
+With the i ncrease in the volume and complexity of data in various machine 
+learning problems, the presence of a large number of features has become one 
+of the main challenges in data analysis. Many of these features are unimportant, 
+repetitive, or noisy, and their us e can reduce the accuracy of models, increase 
+the error rate, and increase computational complexity. Therefore, effective 
+feature selection plays a key role in improving accuracy, reducing data volume, 
+and increasing the efficiency of models. 
+
+===== PAGE 5 =====
+5 
+ 
+The feature s election problem can be defined as a multi -objective optimization 
+problem, in which the simultaneous goal is to maximize the prediction accuracy 
+and minimize the number of features used. Due to the large dimensions of the 
+search space, it is practically im possible to explore all possible combinations of 
+features [7]. 
+To solve this problem, the use of intelligent and population algorithms is 
+proposed. The particle swarm optimization algorithm is able to find effective 
+subsets of features by group searching in the solution space, but it may get stuck 
+in local optima. In contrast, the genetic algorithm increases the search diversity 
+by using combination and mutation operators, but its convergence speed is 
+usually slower. The combination of these two algorithms can prevent getting 
+stuck in local optima and improve the feature selection process while 
+maintaining the search speed. 
+ 
+Research Objectives 
+1- Developing an optimal method for selecting effective features: 
+Design and implement a hybrid algorithm based on particle swarm optimization 
+and genetic algorithm (PSO -GA) to identify an optimal subset of features that 
+have the greatest impact on improving the accuracy of learning models. This 
+method is able to select important and influential features from large data sets 
+and plays a key role in increasing the efficiency and reducing the computational 
+complexity of models. 
+2- Improving the accuracy and efficiency of learning models: 
+Using selected features in advanced classification algorithm models, such as 
+random forest, to increase the prediction accuracy, reduce the error rate, and 
+improve the overall performance of models, while minimizing the number of 
+features used and computational complexity. 
+
+===== PAGE 6 =====
+6 
+ 
+Research Questions 
+1- Can the hybrid algorithm of particle s warm optimization and genetic 
+algorithm select an optimal and effective subset of features to improve the 
+accuracy of learning models? 
+2- Does the use of features selected by the proposed algorithm increase the 
+accuracy of advanced classification algorithm  models such as decision forest 
+compared to traditional feature selection methods? 
+3- Which features have the greatest impact on improving the performance of 
+learning models and what is their role in increasing accuracy and reducing 
+computational complexity? 
+ 
+Research hypotheses 
+1- The combined algorithm based on particle swarm optimization and genetic 
+algorithm is able to identify an optimal and effective subset of features that 
+leads to a significant improvement in the accuracy of machine learning mode ls 
+compared to using all features. 
+2- The use of features selected by the proposed algorithm significantly increases 
+the accuracy of advanced classification algorithm models (such as random 
+forest) compared to traditional feature selection methods. 
+3- The subset of features selected by the proposed algorithm significantly 
+reduces the computational complexity (in terms of training time and number of 
+features) without a noticeable decrease in the model's prediction performance. 
+4- Some features have a more significant impact on the performance of learning 
+models than others, and removing unimportant or noisy features increases the 
+stability and generalizability of the model. 
+
+===== PAGE 7 =====
+7 
+ 
+Methodology 
+Structure and steps of the proposed method 
+As stated in the introduction, in this thesi s, in order to improve the feature 
+selection process and increase the accuracy of machine learning models, a 
+hybrid method based on genetic algorithm and particle swarm optimization 
+algorithm is used. The main goal of using this hybrid approach is to 
+simultaneously utilize the fast search capability of particle swarm optimization 
+algorithm and the ability of genetic algorithm to maintain population diversity 
+and perform extensive search in the response space. 
+In the feature selection problem, the search spa ce includes all possible subsets 
+of features in the dataset, which grows exponentially with increasing number of 
+features. In such circumstances, the use of traditional search methods is 
+practically not possible and finding an optimal subset of features be comes a 
+complex optimization problem. For this reason, the use of metaheuristic 
+algorithms has been considered as an effective solution for searching in this 
+large space. Combining metaheuristic algorithms can make the search process 
+more efficient and inc rease the probability of achieving more optimal solutions 
+by taking advantage of the advantages of each of them. 
+In the proposed method of this research, the feature selection process is carried 
+out using a combination of genetic algorithms and particle sw arm optimization. 
+In this framework, each solution represents a subset of features and the quality 
+of each subset is evaluated using the performance of a classification algorithm 
+model. In this research, the random forest algorithm is used as a classificat ion 
+algorithm model to measure the quality of the selected features. In this way, the 
+combined algorithm tries to identify a subset of features that can provide the 
+highest accuracy of the classification algorithm. 
+
+===== PAGE 8 =====
+8 
+ 
+In the following, Figure 3 -1 shows the general diagram of the proposed method 
+in this research. This diagram shows the different stages of implementing the 
+proposed method, from data entry, preprocessing, feature selection process 
+using the PSO–GA hybrid algorithm, to the final classification sta ge and model 
+performance evaluation. In the rest of this chapter, each of the stages in this 
+diagram will be examined and explained in detail. 
+1- Data Preprocessing 
+Data preprocessing is one of the important and fundamental steps in the data 
+mining and machine learning process. In many real datasets, raw data usually 
+has problems such as missing values, different scales between features, or noise. 
+The presence of such  problems can affect the performance of machine learning 
+algorithms and reduce the accuracy and efficiency of models. Therefore, data 
+preprocessing is performed with the aim of preparing data and improving their 
+quality before entering the modeling stage. Performing this step correctly can 
+play an important role in increasing the accuracy of learning models and 
+improving the feature selection process. 
+In this study, before implementing the feature selection algorithm and the 
+classification process, the data sets undergo several preprocessing steps to put 
+the data in a format suitable for analysis and learning. The most important 
+preprocessing steps in this research include missing value management, data 
+normalization, and data partitioning into training and test sets. 
+One of the common problems in real datasets is the presence of missing or non -
+existent values in some features. The presence of these values can disrupt the 
+model learning process. In this research, the three nearest neighbors method 
+with a K  value of 3 is used to replace missing values. In this method, for each 
+sample with a missing value, the closest samples are identified based on the 
+distance criterion in the feature space, and the missing value is estimated based 
+
+===== PAGE 9 =====
+9 
+ 
+on the average of the sam e feature values among the three nearest neighbors. 
+This method provides more accurate performance than many simple methods 
+such as replacing with the average of the entire data, due to considering the 
+similarity between samples. 
+After replacing the miss ing values, the data normalization step is performed. 
+Since the features in the dataset may have different scales and ranges, this can 
+cause some features to have a greater impact on the learning process. To avoid 
+this problem and create a uniform scale am ong the features, this research uses 
+the min-max normalization method. In this method, the values of each feature 
+are converted to a specific range, usually between zero and one. The min -max 
+normalization formula is expressed as follows: 
+                                                                      
+In this regard, x is the initial value of the feature, X min and X max are the 
+minimum and maximum values of that feature in the dataset, respectively, and 
+Xnorm is the normalized value. Using this method causes all fe atures to be in a 
+common range, and as a result, the learning and search process in optimization 
+algorithms is performed with greater accuracy and stability. 
+Next, after completing the above steps, the data is divided into two parts: the 
+training set and t he test set. The purpose of this division is to train the machine 
+learning model on a part of the data and evaluate its performance on data that 
+has not been used in the training process. This allows the model performance to 
+be evaluated more realistically  and prevents overfitting. In this research, the 
+main part of the data is considered for model training and a smaller part for 
+testing and evaluating the model performance. 
+In summary, performing preprocessing steps including managing missing 
+values using the three nearest neighbors method, normalizing data using the 
+
+===== PAGE 10 =====
+10 
+ 
+Min–Max method, and dividing data into training and testing sets increases data 
+quality and provides suitable conditions for implementing the feature selection 
+algorithm and classification al gorithm model in the later stages of the research. 
+Figure 3-2 summarizes the preprocessing process used in this work. 
+ 
+Figure 3-2 Summary of the preprocessing process 
+ 
+2- Feature selection using the combined process of genetic algorithm and 
+particle swarm optimizer 
+In this research, the feature selection process is designed based on a combined 
+structure of particle swarm optimization algorithm and genetic algorithm. T he 
+purpose of designing this structure is to create a dynamic balance between 
+exploration in a very large search space of subsets of features and exploitation 
+of promising areas to ultimately select a smaller but more effective set of 
+features for the clas sification algorithm model. In this algorithm, each solution 
+is represented as a binary chromosome with a length equal to the total number 
+of features, where the value 1 indicates the selection of that feature and the 
+value 0 indicates its elimination. The refore, the search space will be equal to 2 n 
+
+
+===== PAGE 11 =====
+11 
+ 
+(for n features), in which direct search is practically impossible and requires an 
+effective metaheuristic method. 
+The combined algorithm used operates sequentially; This means that first the 
+particle swarm optimizer-based update is performed and then genetic operators 
+including crossover and adaptive mutation are applied. In the particle swarm 
+optimizer stage, each particle has a binary position and a real velocity vector. 
+The velocity update is performed according to the following classical relation: 
+               (         )      (         )             (3-2)                   
+where w is the inertia weight and decreases from 0.9 at the beginning of the 
+algorithm to 0.4 at the end of the execution so that the algorithm does more 
+exploration in the initial stages and has faster convergence in the final stages. 
+The two parameters c1 and c2 are acceleration coefficients and both values are 
+taken as 2. The vectors r1 and r2 are also vectors of uniform random numbers in 
+the interval [0,1]. Since the search space is binary, the true velocity is  converted 
+into the probability of selecting each feature after calculation through the 
+sigmoid function: 
+                                                            (3-3) 
+And the final value of each bit is determined as follows: 
+        {                                                                                                          (3-4) 
+In this way, the particle swarm optimization algorithm is responsible for guiding 
+the population towards the best areas discovered so far, causing the algorithm to 
+move towards high -quality solutions at an appropriate speed. After the particle 
+swarm optimization stage, the genetic algorithm comes into play to increase the 
+diversity of the population. In this stage, the two-point crossover operator is first 
+performed. In this method, two parents are selected and two random points 
+between 2 and nVar−1 are determined as cut points, and the middle part of these 
+
+===== PAGE 12 =====
+12 
+ 
+two parents is exchanged with each other. This type of crossover allows the 
+combination of meaningful blocks of features and the transfer of appropriate 
+patterns from the parents to the next generation. After that, the mutation 
+operator is applied adaptively and with a decreasing probability from 0.20 at the 
+beginning of the algorithm to 0.02 at the end. The mutation is performed as a bit 
+value inversion and plays an important role in preventing the algorithm from 
+getting stuck in local optima. The gradual decrease in the mutation rate causes 
+the algorithm to have a wide search at the beginning and to show convergent 
+behavior at the end. 
+After the implementation of the particle swarm optimization algorithm, 
+crossover and mutation, the elite mechanism is used to transfer the best 
+individuals of the current generation to the next generation without change. This 
+prevents high-quality solutions from being eliminated due to random operators. 
+In addition, an external archive is also maintained that records the best answers 
+throughout the entire process and  prevents the accumulation of similar 
+solutions. 
+The core of the algorithm is its fitness function, which evaluates the quality of 
+each subset of features. In this research, the fitness function is defined based on 
+the performance of the random forest classification algorithm and the simplicity 
+of the model (the number of selected features). Initially, if no features are 
+selected, the fitness value is set to 1 to eliminate such answers from the 
+algorithm. In the at least one feature selection mode, the data is first subsampled 
+based on the selected features and then 5 -part cross-validation is performed. In 
+each part, the random forest classifier algorithm is trained with 100 trees and its 
+accuracy is calculated on the test data. The average accuracy of the f ive parts is 
+recorded as the final accuracy. Then, a penalty is applied to the number of 
+features to guide the algorithm towards selecting smaller subsets. The cost 
+function is defined as follows: 
+
+===== PAGE 13 =====
+13 
+ 
+                        
+ ∑           
+         (3-5)                      
+where α = 0.99. This value indicates that the al gorithm focuses on maximizing 
+the accuracy of the classification algorithm, but at the same time, the size of the 
+subset of features is also taken into account in decision -making. The first term, 
+(1-Accuracy), directly indicates the error of the classification algorithm, and the 
+second term expresses the ratio of selected features to the total number of 
+features, which is a kind of penalty for more complex models. In this way, the 
+algorithm seeks to minimize the cost. In each iteration, the combined PSO –GA 
+process first quickly identifies suitable areas through the particle swarm 
+optimization algorithm, and then helps to diversify the population and prevent 
+premature convergence by using genetic operators. This structure makes the 
+algorithm have both the fas t optimization of particle swarm optimization and 
+the power of genetic exploration. Finally, the best chromosome state that has the 
+lowest cost function is introduced as the final subset of selected features. The 
+following is a general diagram of the feature selection steps. 
+3- Classification algorithm using random forest 
+After an optimal subset of features was extracted in the previous step using the 
+PSO GA hybrid algorithm, the next step is dedicated to training and evaluating 
+the classification algorithm model based on this selected set of features. In this 
+research, the random forest algorithm has been used to perform the 
+classification algorithm process; a powerful and stable algorithm that, due to its 
+ensemble structure, allows learni ng complex data patterns and effectively 
+dealing with the overfitting phenomenon. Random forest is, in its essence, an 
+ensemble learning method that is formed by putting together a large number of 
+independent decision trees. Each of these trees is created based on a random 
+sampling of the training data; a process known as Bagging. In this mechanism, 
+to build each tree, a set of training examples is first selected with replacement 
+
+===== PAGE 14 =====
+14 
+ 
+and then, at each node of the tree, instead of using all the features, only a 
+random subset of the features is examined to find the best split. These two 
+levels of randomization, namely sampling with replacement and random 
+selection of features, reduce the correlation between the trees and increase the 
+structural diversity of the mo del. The result of this process is a model whose 
+output is the result of a set of diverse predictions and therefore has higher 
+stability and accuracy. 
+The training process of the random forest classifier algorithm is carried out after 
+the selection of features in such a way that the training data, including the 
+examples and their correct labels, is presented to the model. Each decision tree 
+in the forest  forms its internal structure using the same data but with new 
+random sampling. At each node, the algorithm determines the best possible split 
+based on the selected features using criteria such as reducing uncertainty or 
+increasing entropy. This process co ntinues until stopping criteria such as 
+reaching a certain depth are met. Given the independence of tree construction, 
+the entire ensemble implicitly benefits from a form of parallel learning, which 
+also leads to increased computational efficiency. 
+After t he construction of all trees is completed, the trained model is used to 
+predict the class of new examples. In the prediction phase, each decision tree 
+independently proposes an output label based on its decision paths. Then, the 
+random forest determines the final class by a majority voting mechanism among 
+the predictions of all trees. This voting method ensures that the final decision is 
+not affected by the possible error of a single tree, and as a result, the model 
+output is more stable and reliable. For t his reason, random forest usually 
+provides more accurate and robust performance than a single decision tree. 
+One of the key points in using random forest in this research is that the model is 
+trained solely on the training data after feature selection and no test data is used 
+
+===== PAGE 15 =====
+15 
+ 
+to build the trees at any stage. This approach prevents data leakage and makes 
+the evaluation results more reliable. Since the feature set is determined by the 
+PSO GA algorithm and this algorithm also uses only the training data, the 
+random forest classification algorithm is also trained based on the exact same 
+extracted feature space and without the interference of future information. 
+It should also be noted that, unlike some progressive algorithms, random forest 
+has a batch nature; th is means that after the initial training, the structure of the 
+trees remains fixed and if new data needs to be changed or added, the model 
+must be retrained from the beginning. In this study, in order to properly evaluate 
+the performance, the random forest  model is retrained based only on the 
+selected features of the same stage at each fitness calculation during the feature 
+selection process. This repeated retraining ensures that the quality measurement 
+of each feature subset reflects the actual behavior of  the classification algorithm 
+model in future conditions. Finally, the performance of the trained model on the 
+test data is reported as the final measure of the accuracy of the classification 
+algorithm. 
+ 
+Result 
+As explained in the res earch methodology chapter, the first step in 
+implementing the proposed method was data preprocessing. In this step, the 
+missing values in the data were identified and, in order to prevent disruption in 
+the learning process, their values were assigned. For this purpose, the average of 
+three nearest neighbors method was used; so that the value of each missing 
+feature was estimated based on the average of the values of the same feature in 
+three samples close to it. Using this method, the statistical stru cture of the data 
+was preserved as much as possible and bias in the data was prevented. 
+
+===== PAGE 16 =====
+16 
+ 
+Next, in order to equalize the scale of the features and prevent the unbalanced 
+influence of features with larger amplitudes, Min –Max normalization was 
+applied to the data. In this step, the values of all features were transferred to the 
+interval [0,1] to provide more suitable conditions for training machine learning 
+algorithms and to make the learning process more stable and faster. 
+After the preprocessing steps, the data were divided into two parts: training and 
+testing. In this way, 80% of the data were used to train the model and the 
+remaining 20% were used to evaluate the final performance of the model. This 
+division allowed the model to be trained on the majorit y of the data, while its 
+performance was evaluated independently on data that was not observed in the 
+training process. 
+In the next step, in order to identify effective features and eliminate unnecessary 
+features, a hybrid feature selection algorithm based on a combination of particle 
+swarm optimization and genetic algorithm (PSO–GA) was implemented. At this 
+stage, only the data related to the training part were provided to the algorithm so 
+that the feature selection process could be carried out without usi ng information 
+from the test data. 
+To implement the feature selection algorithm, the algorithm parameters were 
+adjusted empirically. In this study, the number of algorithm iterations was set to 
+20 and the population size was set to 20 members. Choosing the se values 
+allowed for a proper balance between search quality and computational time; So 
+that the number of iterations is sufficient for the algorithm to reach the 
+appropriate areas of the search space, while the execution time of the algorithm 
+does not increase too much. Also, the inertia coefficient was chosen to be equal 
+to 0.7 to create a good balance between exploration of the search space and 
+exploitation of promising areas. The cognitive and social learning coefficients 
+were set to be equal to 1.5,  respectively, to consider the effect of the individual 
+
+===== PAGE 17 =====
+17 
+ 
+experience of the particles as well as the best global response in a balanced way 
+in the process of updating the positions. In addition, the mutation rate was 
+chosen to be equal to 0.2 to prevent prem ature convergence of the algorithm by 
+creating diversity in the population and to allow for the examination of more 
+diverse combinations of features. In this algorithm, each response was 
+represented as a binary vector of features; so that the value 1 indic ated the 
+selection of the feature and the value 0 indicated its non -selection. In each 
+iteration, the particle positions were modified using the particle swarm 
+algorithm update relations, and then, to increase the population diversity, the 
+combination and mutation operators of the genetic algorithm were applied to 
+some population members. This combination allowed the algorithm to benefit 
+from the fast search ability of PSO to find suitable areas and from the 
+population diversity of GA to avoid getting stuck in local optima. 
+The quality assessment of each feature subset was performed using the 
+performance of the random forest classifier algorithm, the details of the 
+objective function are provided in the research method chapter. At this stage, to 
+accurately m easure the performance of the feature subsets, a five -part cross -
+validation was performed, and in each part, the random forest classifier 
+algorithm was trained with 100 decision trees. Finally, the average accuracy 
+obtained from these steps was used as an evaluation criterion in the feature 
+selection process. 
+In general, in the combined PSO–GA process, the particle swarm algorithm first 
+quickly identified suitable areas of the search space, and then the genetic 
+operators increased the population diversity b y creating new combinations and 
+applying mutations. This collaboration between the two algorithms made the 
+search process more efficient and identified subsets of features that, while 
+reducing the dimensionality of the data, also maintained the model's abi lity to 
+perform classification. 
+
+===== PAGE 18 =====
+18 
+ 
+Table 4-4 Parameters set in the PSO–GA feature selection algorithm 
+Explanation Amount Symbol/Unit Parameter name 
+Number of times the optimization process 
+is executed 20 Max Iteration 
+Number of 
+iterations of the 
+algorithm 
+Number of particles/chromosomes per 
+iteration 20 
+Population 
+Size Population size 
+Balancing global and local search in PSO 0.7 w Inertia coefficient 
+Effect of individual experience of each 
+particle 1.5 c1 Coefficient of cognitive learning 
+Effect of best collective experience 1.5 c2 Social learning coefficient 
+Probability of performing the combination 
+operator in the genetic algorithm 0.8 Pc Combination rate 
+Probability of random change of genes to 
+maintain population diversity 0.2 Pm Mutation rate 
+Select individuals based on fitness value Roulette Wheel Selection Method Parent selection method 
+Fairly evaluate the model and prevent 
+overfitting 5 K-Fold Cross validation 
+Generate new offspring from selected 
+parents Single Point 
+Crossover 
+Type 
+Combination 
+operator type 
+Randomly change the value of some genes Bit Leap 
+Mutation 
+Type 
+Type of mutation 
+operator 
+Transfer the best response to the next 
+generation without change 1 Member Elitism elitism 
+Simultaneous minimization of the error of 
+the random forest model classification 
+algorithm and the number of selected 
+features 
+Combination Cost Function Feature selection objective function 
+ 
+After completing the optimization process and extracting the optimal subset of 
+features by the PSO –GA hybrid algorithm, the final step of the research was 
+dedicated to training and evaluating the classification algorithm model. At this 
+stage, the Random Fo rest algorithm was used as a powerful ensemble learning 
+model. In the configuration of the classification algorithm model, the following 
+parameters were adjusted to achieve the highest efficiency: 
+
+===== PAGE 19 =====
+19 
+ 
+1. Number of decision trees: The final model was built usin g 100 independent 
+decision trees. Using this number of trees creates an optimal balance between 
+the accuracy of the classification algorithm and the computational complexity 
+and ensures that the variance of the model is minimized. 
+2. Aggregation method: Th e training process is based on the “Bagging” 
+technique. In this method, each tree is trained on a random sample with 
+replacement of the training data. This diversity in the input data of each tree 
+makes the model as a whole insensitive to minor changes in the data set and has 
+high generalizability. 
+3. Majority voting mechanism: The final class prediction is made through a 
+voting process among all 100 trees. Each tree independently predicts a label and 
+the class that receives the most votes is considered as the final output of the 
+model. This approach neutralizes individual tree errors and significantly 
+increases the final accuracy. 
+4. Node splitting criterion: In the structure of each tree, the Gini index was used 
+to determine the best feature for splitting nodes to minimize data impurity at 
+each stage. 
+After training the model on the selected data, its performance was measured 
+using test data that did not play a role in the training process. In this step, the 
+predicted labels were compared with the actual labels and the final evaluation 
+criteria were cal culated by extracting statistical and probabilistic values. Next, 
+we will examine the results obtained for the two datasets introduced in Section 
+4-2. 
+Evaluation of the method results on the spam email dataset 
+Figure (4 1) shows the convergence trend of th e hybrid PSO–GA algorithm for 
+the feature selection process on the Spambase dataset. As is clear from this 
+figure, the value of the cost function has decreased uniformly and stepwise 
+
+===== PAGE 20 =====
+20 
+ 
+during 20 iterations of the algorithm, which indicates the efficiency of the 
+hybrid search mechanism in gradually moving towards the space of more 
+optimal responses. 
+In the initial iterations, the cost value is around 2.2* 〖10〗^(-3), which 
+represents a combination of the classification algorithm error and the relatively 
+large number of features. With the beginning of the search process, relatively 
+large jumps in the cost value are observed; this behavior is due to the dominant 
+role of the genetic component (Crossover and Mutation) in creating high 
+diversity in the initial populat ion and rapid exploration of different parts of the 
+search space. 
+In the middle of the convergence trend, the cost reduction continues with a 
+gentler slope. This section indicates the equilibrium stage in the hybrid 
+algorithm; Where the PSO mechanism, usin g the collective knowledge and 
+individual experience of the particles, is directed towards regions with more 
+stable responses. This behavior is fully consistent with the nature of 
+metaheuristic algorithms, which have a broad search in the initial phases an d a 
+more precise local search in the final phases. 
+Finally, after about 17 iterations, the cost value stabilizes in the range of 1*10(-3) 
+and does not change noticeably until the end of the iterations. This final stability 
+indicates that the algorithm h as reached a point where a balance between 
+classification accuracy and the number of selected features has been achieved 
+and further optimization has no noticeable effect on the cost function. The 
+cessation of changes in the final few iterations indicates that the population has 
+converged towards a relatively optimal solution and the algorithm is not trapped 
+in local deadlocks or random fluctuations. 
+
+===== PAGE 21 =====
+21 
+ 
+ 
+Figure 4 1: Convergence process of the hybrid PSO–GA algorithm for feature 
+selection process on the Spambase dataset 
+ 
+At the end of the optimization process, the hybrid PSO–GA algorithm identified 
+and selected 46 features from the initial 57 features of the Spambase dataset as 
+more effective and important features. Then, using these features, the  random 
+forest classifier algorithm was trained and its performance was evaluated on the 
+test dataset. Next, the results are examined and analyzed based on the confusion 
+matrix and the receiver operating characteristic curve for the test dataset. 
+Figure 4 2 shows the confusion matrix of the results of the random forest 
+classifier algorithm on the test dataset. In this study, class 0 represents healthy 
+(non-spam) emails and class 1 represents spam emails. The confusion matrix is 
+a tool for evaluating the performance of a classification algorithm model, which 
+displays the number of correct and incorrect predictions for each class by 
+comparing the actual and predicted labels. 
+Based on Figure 4 2, the elements of the confusion matrix are interpreted as 
+follows: 
+• 538 healthy email samples (class 0) are correctly identified as healthy. 
+• 20 healthy email samples are incorrectly classified as spam. 
+
+
+===== PAGE 22 =====
+22 
+ 
+• 23 spam email samples (class 1) are incorrectly identified as healthy. 
+• 339 spam email samples are correctly classified as spam. 
+These results indicate that the proposed model is able to discriminate between 
+healthy and spam emails with reasonable accuracy, and the number of false 
+positives, especially in identifying spam emails, is at an acceptable level. 
+ 
+Figure 4 2: Confusion matrix of the results of the random forest classifier 
+algorithm on the Spambase dataset 
+ 
+Next, Figure 4 3 shows the receiver operating characteristic (ROC) curve 
+obtained for the Spamba se test dataset. The ROC curve shows the relationship 
+between the true positive rate (TPR) and the false positive rate (FPR) at 
+different decision thresholds, thereby evaluating the ability of the model to 
+distinguish between the two classes of healthy (0)  and spam (1). In this graph, 
+the dotted diagonal line (from (0,0) to (1,1)) represents the performance of a 
+random classifier; the curve lying on this line means that the model has no 
+significant discrimination power and its performance is approximately 
+equivalent to random guessing. In contrast, the area above this line indicates 
+better than chance performance and good discrimination power; The closer the 
+curve is to the upper -left corner, the model with a lower FPR can achieve a 
+
+
+===== PAGE 23 =====
+23 
+ 
+higher TPR, which is the most desirable case for spam detection problems. On 
+the other hand, a curve below the diagonal line usually means poorer 
+performance than chance and can indicate that the decision direction of the 
+model is reversed (in such a way that performance is improv ed by reversing the 
+outputs). 
+According to Figure 43, the ROC curve is clearly located above the diagonal 
+line and most of its path is concentrated near the upper-left corner; this indicates 
+that the random forest classifier (with features selected by PSO –GA) is able to 
+correctly identify spam emails at a high rate, while the false positive error rate 
+(falsely labeling healthy emails as spam) remains low. The area under the curve 
+or AUC in this figure is also reported to be 0.988. An AUC value close to 1 
+indicates a very high discrimination power and the ability to correctly rank 
+spam and healthy samples at most decision thresholds; in other words, the 
+model assigns a higher score (or probability) to spam samples than healthy 
+samples with a very high probabi lity. Therefore, the location of the curve in the 
+area above the reference line and the AUC value = 0.988 confirm that the 
+proposed method has provided a very favorable and stable performance in terms 
+of spam detection on the test data. 
+ 
+Figure 4-3: Receiver performance characteristic curve obtained for the 
+Spambase test dataset 
+
+
+===== PAGE 24 =====
+24 
+ 
+Figure 4-4 shows the performance evaluation results of the proposed model on 
+the test dataset. According to this figure, the four main metrics including overall 
+accuracy, spam label prediction accuracy, real spam recovery rate and AF score 
+are reported to be 96.33%, 95.43%, 94.65% and 95.04%, respectively. The high 
+value of overall accuracy indicates that the model was able to correctly classify 
+a large proportion of healthy and spam emails. On the other hand, the high spam 
+label prediction accuracy indicates that the majority of emails that the model 
+detected as spam were actually spam; therefore, the false alarm rate is at a low 
+level, which is of great importance from an applicatio n perspective, because 
+incorrect labeling of healthy emails as spam can lead to the loss of important 
+messages. Also, the acceptable value of the recovery rate shows that the model 
+has a good ability to identify real spam and has detected a large part of t hem 
+without being stuck; this is especially important for reducing false negative 
+error and preventing spam from reaching the user's inbox. Finally, the value of 
+the AFK score, which is the coordinated average of the prediction accuracy and 
+recovery rate, confirms the appropriate balance between these two criteria and 
+shows that the model has not simply improved one of the criteria at the expense 
+of the other. In general, the closeness of the prediction accuracy, recovery rate, 
+and AFK score values and th eir being all in a range higher than ninety -four 
+percent indicates the stability of the model's performance and appropriate 
+resolution on the test data; therefore, it can be concluded that the proposed 
+method provides a good performance in a practical spam  detection scenario by 
+maintaining a balance between correct spam detection and reducing false 
+alarms. 
+
+===== PAGE 25 =====
+25 
+ 
+ 
+Figure 4-4 shows the results of evaluating the performance of the proposed 
+model on the Spambase test dataset 
+ 
+• Review of the results of the method on the phishing dataset 
+Figure 4-5 shows the convergence trend of the combined method used on the 
+phishing dataset. As can be seen in the graph, the value of the cost function has 
+decreased with a steep slope in the initial iterations; this rapid drop indicate s 
+that the algorithm has succeeded in eliminating a significant portion of 
+inappropriate feature combinations in the very early stages and moving towards 
+more promising areas of the search space. After this stage, the slope of the cost 
+reduction becomes ge ntler and the graph gradually approaches a stable region; 
+so that from about the ninth iteration onwards, the cost changes are very limited, 
+indicating that the algorithm has reached a converged state and further 
+improvements are only possible on a very sm all scale. This behavior indicates 
+that the search process has reached a good balance between broad search in the 
+early stages and focused search in the late stages, and aimless fluctuations and 
+getting stuck in shallow spots have been prevented. Finally, the final result of 
+running the algorithm on the phishing dataset shows that out of the initial thirty 
+features, twenty-two features have been selected as the superior feature set; in 
+addition to reducing the data volume and simplifying the model, the selection of 
+
+
+===== PAGE 26 =====
+26 
+ 
+this optimal subset has increased the processing speed and focused the model on 
+the features that are truly influential in distinguishing healthy and phishing 
+samples. 
+ 
+Figure 4-5: Convergence trend of the hybrid PSO–GA algorithm for feature 
+selection process in the phishing dataset 
+ 
+Figure 4 -6 shows the confusion matrix of the phishing dataset classification 
+results in the test phase. In this matrix, label -1 indicates healthy websites and 
+label 1 indicates phishing websites. Based on the obtained values, 955 healthy 
+samples were correctly classified in the healthy class, while 25 healthy samples 
+were incorrectly classified in the phishing class. The relatively low value of this 
+error indicates that the model performed reasonably well in detecting healthy 
+pages and was able to prevent false alarms to a large extent. 
+On the other side of the matrix, among the phishing samples in the test set, 
+1,216 samples were correctly identified as phishing, indicating the high power 
+of the model in detecting malicious pages. In contrast, only 15 phishing samples 
+were incorrectly identified as healthy, which is a very small number compared 
+to the total number of phishing samples. The low value of this value indicates 
+that the proposed model has a good ability to identify phishing threats and the 
+probability of malicious pages passing the detection system has been 
+significantly reduced. 
+
+
+===== PAGE 27 =====
+27 
+ 
+In general, comparing the values in the matrix elements shows that the number 
+of correct predictions in both classes is much higher than the classification 
+errors. Thi s indicates that the proposed model has been able to identify the 
+effective features associated with healthy and phishing pages well and 
+distinguish between these two categories with high accuracy. 
+ 
+Figure 4-6: Confusion matrix for the phishing dataset classification results in 
+the test phase 
+Figure 4-7 shows the ROC curve for the phishing dataset. As can be seen from 
+the graph, the area under the curve is 0.996, indicating that the model is almost 
+perfectly capable of distinguishing between healthy and phis hing websites. The 
+curve increases very steeply and almost vertically at the very beginning of the 
+axis, reaching the upper regions of the graph; this indicates that the model is 
+able to correctly identify a significant portion of phishing samples while th e 
+false positive error rate is still almost zero. The curve then remains close to 
+unity for almost the entire length of its path, indicating that the model maintains 
+a high rate of correct identification of phishing samples. The large distance of 
+the curve  from the diagonal line, which represents random performance, 
+indicates that the model is able to distinguish between the two classes with high 
+confidence and is not confused. Overall, the shape of the curve and the high 
+
+
+===== PAGE 28 =====
+28 
+ 
+AUC value make it clear that the mo del has a very accurate and reliable 
+performance in balancing the correct detection rate and controlling the 
+classification error, and has been able to provide near -ideal performance in an 
+application such as phishing detection, where both sensitivity and specificity are 
+crucial. 
+ 
+Figure 4-7: Receiver operating characteristic curve obtained for the phishing 
+test dataset 
+Figure 4-8 shows the four main criteria for evaluating the model’s performance 
+in the testing phase. As can be seen from the graph, the mod el’s accuracy value 
+is 98.20%, which indicates that the model was able to correctly classify a very 
+large portion of healthy and phishing samples. The accuracy value is also 
+reported to be 97.98%, which indicates that when the model identifies a sample 
+as phishing, this decision is almost always correct and the false positive error 
+rate remains very low. The model’s recall also reached 98.80%, which indicates 
+its very high ability to identify phishing samples and indicates that only a very 
+limited number of  malicious samples are hidden from the system’s view. 
+Finally, the FEC score, which balances precision and recall, was 98.39%, 
+indicating that the model performed consistently and consistently in 
+simultaneously reducing false positives and false negatives.  The sum of these 
+values confirms that the model used performed at a very desirable level in terms 
+
+
+===== PAGE 29 =====
+29 
+ 
+of overall accuracy, threat detection ability, and false alarm prevention, and is 
+fully reliable for sensitive security applications such as phishing detection. 
+ 
+Figure 4-8: Results of evaluating the performance of the proposed model on the 
+phishing test dataset 
+ 
+Conclusion 
+In recent years, the increase in data volume and number of features in machine 
+learning problems has made feature selection one of th e most important steps in 
+data preprocessing. The presence of unnecessary and repetitive features can 
+increase computational complexity, reduce processing speed, and degrade the 
+performance of classification models. Therefore, using optimal methods to 
+select effective features plays an important role in improving the accuracy and 
+efficiency of machine learning models. In this study, a hybrid method based on 
+PSO and GA metaheuristic algorithms was presented to select optimal features, 
+and its performance was evaluated using the random forest classifier algorithm. 
+In the proposed method, first, the PSO GA hybrid algorithm was used to search 
+the feature space and find an optimal subset of effective features. The 
+simultaneous use of the global search capability of the PSO algorithm and the 
+ability to generate diverse responses in the genetic algorithm made the feature 
+
+
+===== PAGE 30 =====
+30 
+ 
+selection process more accurate and stable. Then, the selected features were 
+given to the random forest classifier algorithm to examine the perform ance of 
+the model in terms of classification accuracy. 
+Two datasets, Spambase and Phishing, were used to evaluate the proposed 
+method. The results showed that the combined algorithm was able to remove a 
+significant number of unnecessary features while main taining or improving the 
+classification accuracy. In the Spambase dataset, 46 features were selected from 
+among the 57 initial features, and the model was able to achieve an accuracy of 
+96.79%, a precision of 96.40%, a recall of 97.89%, and an F1 score of 97.14%. 
+Also, the AUC value of 0.988 indicated the high power of the model in 
+separating classes. 
+In the Phishing dataset, the proposed algorithm selected 22 effective features 
+from among the 30 initial features. The classification results showed that the 
+model achieved an accuracy of 98.20%, a precision of 97.98%, a recall of 
+98.80%, and an F1 score of 98.39%. The AUC value of 0.996 also showed that 
+the selected features have a very high ability to separate classes. 
+In general, the results of this study sh owed that the combined PSO GA method 
+is an effective approach for feature selection in classification problems and can 
+improve the performance of the model while reducing the number of features. 
+The use of selected features reduced the complexity of the mo del, increased the 
+processing speed, and improved the generalizability of the classification 
+algorithm. Also, the stability of the results in two different datasets indicates the 
+reliability and appropriate efficiency of the proposed method in feature selection 
+problems. 
+Finally, it can be stated that feature selection using meta -heuristic algorithms, 
+especially hybrid methods, can play an important role in increasing the 
+efficiency of machine learning models, and the method presented in this 
+research has also been able to provide acceptable results in this field. 
