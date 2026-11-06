@@ -230,3 +230,14 @@ frozen exe and the Inno Setup installer pass `--selftest` under Wine, and
 Note that a Wine pass is not a substitute for a real Windows smoke test: the
 frozen exe loads the genuine Windows UCRT, so it must be launched once on
 Windows before release.
+
+## Publishing
+
+The repository is `hamza2234/HASEEN`. GitHub rejects blobs over 100 MB, so
+`release/*.exe`, `release/*.zip` and `release/*.tar.gz` are gitignored and
+shipped as GitHub Release assets instead. `release/index.html` is the download
+page and `release/SHA256SUMS.txt` holds the checksums; both are committed.
+
+To publish a build: commit the source, push `main`, create a release, then
+upload the artefacts. Re-uploading an asset that already exists fails — delete
+the old asset first (or use `?label=` to keep both).
